@@ -3,6 +3,10 @@ The data are from LCLS proposal LD91, run 108.
 
 Zeldin's cluster.unit_cell may be run with either cctbx-style integration pickles
 (one per lattice) or tarred files containing the pickles:
+
+[Note:  this example directory does not contain the pickle/tar file data.  However, see
+below; the same analysis may be performed from the lysozyme*.txt files]
+
 cluster.unit_cell --paths ../data/untar/r0108/000/out/int-0-2014061603*0.pickle -t 30 #pickle example
 cluster.unit_cell --paths ../../../../0917sprint/data/TAR_95-114/r0108*2.pickle.tar -t 25 # tar example
 There are 55 input files
@@ -20,5 +24,16 @@ cluster_1        30       80.24 (0.09 ) 80.24 (0.09 ) 36.97 (0.05 ) 90.00 (0.00)
 cluster_2        1311     78.95 (0.11 ) 78.95 (0.11 ) 38.12 (0.06 ) 90.00 (0.00) 90.00 (0.00) 90.00 (0.00)
 1311 in P4/mmm.
 Standard deviations are in brackets.
+
+libtbx.python summarize_cells.py ../../../../0917sprint/data/TAR_95-114/r0108*2.pickle.tar > lysozyme1341.txt
+libtbx.python summarize_cells.py ../../../../0917sprint/data/TAR_95-114/r0108*.pickle.tar > lysozyme13004.txt
+libtbx.python plot_cells.py lysozyme1341.txt # plot the a vs. c clusters
+libtbx.python plot_cells.py lysozyme13004.txt
+
+Do Zeldin clustering directly from unit cell / space group text file:
+cluster.unit_cell --text lysozyme1341.txt -t 25 # plots the dendrogram
+cluster.unit_cell --text lysozyme1341.txt -t 25 --noplot # without the dendrogram (takes 18 sec)
+cluster.unit_cell --text lysozyme13004.txt -t 25 --noplot # large example (takes 22 min 12 sec)
+
 
 
