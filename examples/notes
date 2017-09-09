@@ -1,0 +1,24 @@
+Example 1:  Two isoforms of lysozyme
+The data are from LCLS proposal LD91, run 108.
+
+Zeldin's cluster.unit_cell may be run with either cctbx-style integration pickles
+(one per lattice) or tarred files containing the pickles:
+cluster.unit_cell --paths ../data/untar/r0108/000/out/int-0-2014061603*0.pickle -t 30 #pickle example
+cluster.unit_cell --paths ../../../../0917sprint/data/TAR_95-114/r0108*2.pickle.tar -t 25 # tar example
+There are 55 input files
+1341 lattices will be analyzed
+
+0 singletons:
+
+Point group    a           b           c          alpha        beta         gamma       
+
+2 clusters:
+
+Cluster_id       N_xtals  Med_a         Med_b         Med_c         Med_alpha    Med_beta     Med_gamma   
+cluster_1        30       80.24 (0.09 ) 80.24 (0.09 ) 36.97 (0.05 ) 90.00 (0.00) 90.00 (0.00) 90.00 (0.00)
+30 in P4/mmm.
+cluster_2        1311     78.95 (0.11 ) 78.95 (0.11 ) 38.12 (0.06 ) 90.00 (0.00) 90.00 (0.00) 90.00 (0.00)
+1311 in P4/mmm.
+Standard deviations are in brackets.
+
+
