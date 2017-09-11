@@ -35,5 +35,15 @@ cluster.unit_cell --text lysozyme1341.txt -t 25 # plots the dendrogram
 cluster.unit_cell --text lysozyme1341.txt -t 25 --noplot # without the dendrogram (takes 18 sec)
 cluster.unit_cell --text lysozyme13004.txt -t 25 --noplot # large example (takes 22 min 12 sec)
 
+Based on 9/11/2017 conversation:
+source setpath.sh | setpath.csh
+tcsh: setenv BOOST_ADAPTBX_FPE_DEFAULT 1
+bash: export BOOST_ADAPTBX_FPE_DEFAULT=1
+Recompile NCDist.h with OpenMP to afford 24-fold potential speedup
+Consider refactoring the order NxN calculation of NCDist matrix with MPI
+Later:  wrap Tnear.h in Boost python to get NearTree class interface in Python
+
+
+
 
 
