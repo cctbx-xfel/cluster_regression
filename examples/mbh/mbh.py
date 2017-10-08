@@ -46,35 +46,33 @@ def run_detail(show_plot, save_plot):
     from xfel.clustering import Rodriguez_Laio_clustering_2014
     R = Rodriguez_Laio_clustering_2014(distance_matrix = Dij, d_c = d_c)
     rho = R.get_rho()
-
-    rho_i = flex.size_t(NN)
-    for i in xrange(NN):
-      for j in xrange(NN):
-        if Dij[(i,j)] < d_c:  rho_i[i]+=1
-    for i in xrange(NN):
-      assert rho[i]==rho_i[i]
-    rho_i = rho
-    ave_rho = flex.mean(rho_i.as_double())
+    ave_rho = flex.mean(rho.as_double())
     print "The average rho_i is %5.2f, or %4.1f%%"%(ave_rho, 100*ave_rho/NN)
-    i_max = flex.max_index(rho_i)
+    i_max = flex.max_index(rho)
 
     P = Profiler("3.transition")
     print "the index with the highest density is %d"%(i_max)
     delta_i_max = flex.max(flex.double([Dij[i_max,j] for j in xrange(NN)]))
     print "delta_i_max",delta_i_max
-    rho_order = flex.sort_permutation(rho_i,reverse=True)
+    rho_order = flex.sort_permutation(rho,reverse=True)
     rho_order_list = list(rho_order)
-    delta_i = flex.double(NN,delta_i_max)
+
     # delta_i is measured by computing the minimum distance between the point i
     # and any other point with higher OR EQUAL density (emphasis mine)
     P = Profiler("4. delta")
+    delta = R.get_delta(rho_order=rho_order, delta_i_max=delta_i_max)
+    delta_i = flex.double(NN,delta_i_max)
     for p in xrange(1,NN): # first iteration through rho order
       i = rho_order[p]
       for q in xrange(p):
         j = rho_order[q]
         #print p,q,i,j
-        if rho_i[j] >= rho_i[i] and Dij[(i,j)] < delta_i[i]:
+        if rho[j] >= rho[i] and Dij[(i,j)] < delta_i[i]:
           delta_i[i] = Dij[(i,j)]
+
+    for ix in xrange(NN):
+      assert delta[ix] == delta_i[ix]
+
     P = Profiler("5. find cluster maxima")
     #---- Now hunting for clusters
     cluster_id = flex.int(NN,-1) # default -1 means no cluster
@@ -97,13 +95,13 @@ def run_detail(show_plot, save_plot):
     print "Found %d clusters"%n_cluster
     for x in xrange(NN):
       if cluster_id[x]>=0:
-        print "XC",x,cluster_id[x],rho_i[x],delta_i[x]
+        print "XC",x,cluster_id[x],rho[x],delta_i[x]
 
     from matplotlib import pyplot as plt
-    #plt.plot(rho_i,delta_i,"r.", markersize=3.)
+    #plt.plot(rho,delta_i,"r.", markersize=3.)
     #for x in xrange(NN):
     #  if cluster_id[x]>=0:
-    #    plt.plot([rho_i[x]],[delta_i[x]],"ro")
+    #    plt.plot([rho[x]],[delta_i[x]],"ro")
     #plt.show()
 
 #start here.
@@ -142,14 +140,14 @@ def run_detail(show_plot, save_plot):
       this_border = (cluster_id == ic) & (border==True)
       print len(this_border), this_border.count(True)
       if this_border.count(True)>0:
-        highest_density = flex.max(rho_i.select(this_border))
-        halo_selection = (rho_i < highest_density) & (this_border==True)
+        highest_density = flex.max(rho.select(this_border))
+        halo_selection = (rho < highest_density) & (this_border==True)
         if halo_selection.count(True)>0:
           cluster_id.set_selected(halo_selection,-1)
         core_selection = (cluster_id == ic) & ~halo_selection
-        highest_density = flex.max(rho_i.select(core_selection))
+        highest_density = flex.max(rho.select(core_selection))
         #from IPython import embed; embed()
-        too_sparse = core_selection & (rho_i.as_double() < highest_density/10.) # another heuristic
+        too_sparse = core_selection & (rho.as_double() < highest_density/10.) # another heuristic
         if too_sparse.count(True)>0:
           cluster_id.set_selected(too_sparse,-1)
 
@@ -168,15 +166,14 @@ if __name__=="__main__":
 
   run_detail(show_plot=False, save_plot=False)
 """ Benchmark, 6672 MBH lattices
-                   Python/Flex arrays;C++ Dij;C++ rho;
-         0. Read data: CPU,    0.000s;  0.00s;  0.01s;
-1. compute Dij matrix: CPU,  171.810s;  1.92s;  1.47s;
- 2.calculate rho dens: CPU,  129.620s;143.39s;  0.27s;
-         3.transition: CPU,    0.020s;  0.03s;  0.02s;
-             4. delta: CPU,  121.590s;121.04s;114.22s;
-5.find cluster maxima: CPU,    0.570s;  0.59s;  0.56s;
- 6. assign all points: CPU,   83.540s; 84.43s; 79.74s;
-      7. assign halos: CPU,   63.750s; 87.83s; 77.63s;
-TOTAL                : CPU,  570.900s;439.23s;273.92s;
-
+                   Python/Flex arrays;C++ Dij;C++ rho;C++delt;
+         0. Read data: CPU,    0.000s;  0.00s;  0.01s;  0.00s;
+1. compute Dij matrix: CPU,  171.810s;  1.92s;  1.47s;  1.11s;
+ 2.calculate rho dens: CPU,  129.620s;143.39s;  0.27s;  0.27s;
+         3.transition: CPU,    0.020s;  0.03s;  0.02s;  0.04s;
+             4. delta: CPU,  121.590s;121.04s;114.22s;  0.27s;
+5.find cluster maxima: CPU,    0.570s;  0.59s;  0.56s;  0.48s;
+ 6. assign all points: CPU,   83.540s; 84.43s; 79.74s; 90.77s;
+      7. assign halos: CPU,   63.750s; 87.83s; 77.63s; 82.06s;
+TOTAL                : CPU,  570.900s;439.23s;273.92s;175.00s;
 """
