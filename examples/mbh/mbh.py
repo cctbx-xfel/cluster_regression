@@ -1,7 +1,7 @@
 from __future__ import division
 from cctbx.array_family import flex
 from libtbx.development.timers import Profiler
-import math
+
 """
 Initial implementation of clustering by Rodriguez 2014 algorithm
 """
@@ -33,32 +33,31 @@ def run_detail(show_plot, save_plot):
       if show_plot:
         plt.show()
 
-    print "Now constructing a Dij matrix.  Do it faster with C++ outer product"
-    #from IPython import embed; embed()
+    print "Now constructing a Dij matrix."
     P = Profiler("1. compute Dij matrix")
     NN = len(coord_x)
     embedded_vec2 = flex.vec2_double(coord_x,coord_y)
-    Dij_C = embedded_vec2.distance_matrix(embedded_vec2)
-    print Dij_C.focus()
-
-    Dij = flex.double(flex.grid(NN,NN))
-    print Dij.focus()
-    for i in xrange(NN):
-      for j in xrange(NN):
-        Dij[(i,j)] = math.sqrt( (coord_x[i]-coord_x[j])**2 + (coord_y[i]-coord_y[j])**2 )
-        assert Dij[(i,j)] == Dij_C[(i,j)]
+    Dij = embedded_vec2.distance_matrix(embedded_vec2)
 
     P = Profiler("2. calculate rho density")
     print "finished Dij, now calculating rho_i, the density"
     max_Dij = flex.max(Dij)
     d_c = 0.04 # a guess, for now
+    from xfel.clustering import Rodriguez_Laio_clustering_2014
+    R = Rodriguez_Laio_clustering_2014(distance_matrix = Dij, d_c = d_c)
+    rho = R.get_rho()
+
     rho_i = flex.size_t(NN)
     for i in xrange(NN):
       for j in xrange(NN):
         if Dij[(i,j)] < d_c:  rho_i[i]+=1
+    for i in xrange(NN):
+      assert rho[i]==rho_i[i]
+    rho_i = rho
     ave_rho = flex.mean(rho_i.as_double())
     print "The average rho_i is %5.2f, or %4.1f%%"%(ave_rho, 100*ave_rho/NN)
     i_max = flex.max_index(rho_i)
+
     P = Profiler("3.transition")
     print "the index with the highest density is %d"%(i_max)
     delta_i_max = flex.max(flex.double([Dij[i_max,j] for j in xrange(NN)]))
@@ -169,15 +168,15 @@ if __name__=="__main__":
 
   run_detail(show_plot=False, save_plot=False)
 """ Benchmark, 6672 MBH lattices
-                   Python/Flex arrays C++ Dij
-         0. Read data: CPU,    0.000s;  0.00s;
-1. compute Dij matrix: CPU,  171.810s;  1.92s;
- 2.calculate rho dens: CPU,  129.620s;143.39s;
-         3.transition: CPU,    0.020s;  0.03s;
-             4. delta: CPU,  121.590s;121.04s;
-5.find cluster maxima: CPU,    0.570s;  0.59s;
- 6. assign all points: CPU,   83.540s; 84.43s;
-      7. assign halos: CPU,   63.750s; 87.83s;
-TOTAL                : CPU,  570.900s;439.23s;
+                   Python/Flex arrays;C++ Dij;C++ rho;
+         0. Read data: CPU,    0.000s;  0.00s;  0.01s;
+1. compute Dij matrix: CPU,  171.810s;  1.92s;  1.47s;
+ 2.calculate rho dens: CPU,  129.620s;143.39s;  0.27s;
+         3.transition: CPU,    0.020s;  0.03s;  0.02s;
+             4. delta: CPU,  121.590s;121.04s;114.22s;
+5.find cluster maxima: CPU,    0.570s;  0.59s;  0.56s;
+ 6. assign all points: CPU,   83.540s; 84.43s; 79.74s;
+      7. assign halos: CPU,   63.750s; 87.83s; 77.63s;
+TOTAL                : CPU,  570.900s;439.23s;273.92s;
 
 """
