@@ -57,26 +57,13 @@ def run_detail(show_plot, save_plot):
     rho_order = flex.sort_permutation(rho,reverse=True)
     rho_order_list = list(rho_order)
 
-    # delta_i is measured by computing the minimum distance between the point i
-    # and any other point with higher OR EQUAL density (emphasis mine)
     P = Profiler("4. delta")
     delta = R.get_delta(rho_order=rho_order, delta_i_max=delta_i_max)
-    delta_i = flex.double(NN,delta_i_max)
-    for p in xrange(1,NN): # first iteration through rho order
-      i = rho_order[p]
-      for q in xrange(p):
-        j = rho_order[q]
-        #print p,q,i,j
-        if rho[j] >= rho[i] and Dij[(i,j)] < delta_i[i]:
-          delta_i[i] = Dij[(i,j)]
-
-    for ix in xrange(NN):
-      assert delta[ix] == delta_i[ix]
 
     P = Profiler("5. find cluster maxima")
     #---- Now hunting for clusters
     cluster_id = flex.int(NN,-1) # default -1 means no cluster
-    delta_order = flex.sort_permutation(delta_i,reverse=True)
+    delta_order = flex.sort_permutation(delta,reverse=True)
     N_CLUST = 10 # maximum of 10 points to be considered as possible clusters
     MAX_PERCENTILE_DELTA = 0.10 # cluster centers have to be in the top 10% percentile delta
     MAX_PERCENTILE_RHO = 0.75 # cluster centers have to be in the top 75% percentile rho
@@ -85,7 +72,7 @@ def run_detail(show_plot, save_plot):
     for ic in xrange(max_n_delta):
       # test the density, rho
       item_idx = delta_order[ic]
-      if delta_i[item_idx] < 0.25 * delta_i[delta_order[0]]: # too low (another heuristic!)
+      if delta[item_idx] < 0.25 * delta[delta_order[0]]: # too low (another heuristic!)
         continue
       item_rho_order = rho_order_list.index(item_idx)
       if item_rho_order/NN < MAX_PERCENTILE_RHO :
@@ -95,20 +82,21 @@ def run_detail(show_plot, save_plot):
     print "Found %d clusters"%n_cluster
     for x in xrange(NN):
       if cluster_id[x]>=0:
-        print "XC",x,cluster_id[x],rho[x],delta_i[x]
+        print "XC",x,cluster_id[x],rho[x],delta[x]
 
     from matplotlib import pyplot as plt
-    #plt.plot(rho,delta_i,"r.", markersize=3.)
+    #plt.plot(rho,delta,"r.", markersize=3.)
     #for x in xrange(NN):
     #  if cluster_id[x]>=0:
-    #    plt.plot([rho[x]],[delta_i[x]],"ro")
+    #    plt.plot([rho[x]],[delta[x]],"ro")
     #plt.show()
 
-#start here.
-# we are not assigning remaining points correctly
     P = Profiler("6. assign all points")
+    cpp_cluster_id = cluster_id.deep_copy()
+    R.cluster_assignment(rho_order,cpp_cluster_id)
     # one pass to identify cluster id
     # assign each point to its nearest neighbor (Dij) of higher density
+
     for p in xrange(NN):
       item_idx = rho_order[p]
       if cluster_id[item_idx] == -1: # still unassigned
@@ -119,6 +107,10 @@ def run_detail(show_plot, save_plot):
             i_neighbor = rho_order[q]
             trial_Dij = Dij[(item_idx,rho_order[q])]
         cluster_id[item_idx] = cluster_id[i_neighbor]
+    for ix in xrange(NN):
+      assert cpp_cluster_id[ix]==cluster_id[ix]
+
+    cluster_id = cpp_cluster_id
     #for idx in xrange(NN):
     #
     #  plt.plot([coord_x[idx]],[coord_y[idx]],"%so"%(
@@ -166,14 +158,14 @@ if __name__=="__main__":
 
   run_detail(show_plot=False, save_plot=False)
 """ Benchmark, 6672 MBH lattices
-                   Python/Flex arrays;C++ Dij;C++ rho;C++delt;
-         0. Read data: CPU,    0.000s;  0.00s;  0.01s;  0.00s;
-1. compute Dij matrix: CPU,  171.810s;  1.92s;  1.47s;  1.11s;
- 2.calculate rho dens: CPU,  129.620s;143.39s;  0.27s;  0.27s;
-         3.transition: CPU,    0.020s;  0.03s;  0.02s;  0.04s;
-             4. delta: CPU,  121.590s;121.04s;114.22s;  0.27s;
-5.find cluster maxima: CPU,    0.570s;  0.59s;  0.56s;  0.48s;
- 6. assign all points: CPU,   83.540s; 84.43s; 79.74s; 90.77s;
-      7. assign halos: CPU,   63.750s; 87.83s; 77.63s; 82.06s;
-TOTAL                : CPU,  570.900s;439.23s;273.92s;175.00s;
+                   Python/Flex arrays;C++ Dij;C++ rho;C++delt;C clust;
+         0. Read data: CPU,    0.000s;  0.00s;  0.01s;  0.00s;  0.00s;
+1. compute Dij matrix: CPU,  171.810s;  1.92s;  1.47s;  1.11s;  1.66s;
+ 2.calculate rho dens: CPU,  129.620s;143.39s;  0.27s;  0.27s;  0.19s;
+         3.transition: CPU,    0.020s;  0.03s;  0.02s;  0.04s;  0.02s;
+             4. delta: CPU,  121.590s;121.04s;114.22s;  0.27s;  0.23s;
+5.find cluster maxima: CPU,    0.570s;  0.59s;  0.56s;  0.48s;  0.47s;
+ 6. assign all points: CPU,   83.540s; 84.43s; 79.74s; 90.77s;  0.36s;
+      7. assign halos: CPU,   63.750s; 87.83s; 77.63s; 82.06s; 83.06s;
+TOTAL                : CPU,  570.900s;439.23s;273.92s;175.00s; 85.99s;
 """
