@@ -92,41 +92,32 @@ def run_detail(show_plot, save_plot):
     #plt.show()
 
     P = Profiler("6. assign all points")
-    cpp_cluster_id = cluster_id.deep_copy()
-    R.cluster_assignment(rho_order,cpp_cluster_id)
-    # one pass to identify cluster id
-    # assign each point to its nearest neighbor (Dij) of higher density
+    R.cluster_assignment(rho_order,cluster_id)
 
-    for p in xrange(NN):
-      item_idx = rho_order[p]
-      if cluster_id[item_idx] == -1: # still unassigned
-        trial_Dij = max_Dij
-        i_neighbor = None
-        for q in xrange(p):
-          if Dij[(item_idx,rho_order[q])] < trial_Dij:
-            i_neighbor = rho_order[q]
-            trial_Dij = Dij[(item_idx,rho_order[q])]
-        cluster_id[item_idx] = cluster_id[i_neighbor]
-    for ix in xrange(NN):
-      assert cpp_cluster_id[ix]==cluster_id[ix]
-
-    cluster_id = cpp_cluster_id
     #for idx in xrange(NN):
     #
     #  plt.plot([coord_x[idx]],[coord_y[idx]],"%so"%(
     #    {-1:'k',0:'b',1:'r',2:'g'}[cluster_id[idx]]
     #))
     #plt.show()
-# assign the halos
+
+    # assign the halos
     P = Profiler("7. assign halos")
     halo = flex.bool(NN,False)
+
     border = flex.bool(NN,False)
     for i in xrange(0,NN):
       for j in xrange(i+1,NN):
         if Dij[(i,j)] < d_c: # find points being within d_c of those in another cluster
-          #print Dij[(i,j)] , d_c, i,j, cluster_id[i], cluster_id[j]
           if cluster_id[i] != cluster_id[j]:
             border[i]=True; border[j]=True
+    cpp_border = R.get_border( cluster_id = cluster_id )
+    for ix in xrange(NN):
+      assert cpp_border[ix] == border[ix]
+
+    border = R.get_border( cluster_id = cluster_id )
+
+    P = Profiler("8. part")
     for ic in range(n_cluster): #loop thru all border regions; find highest density
       print "cluster",ic, "in border",border.count(True)
       this_border = (cluster_id == ic) & (border==True)
@@ -138,11 +129,10 @@ def run_detail(show_plot, save_plot):
           cluster_id.set_selected(halo_selection,-1)
         core_selection = (cluster_id == ic) & ~halo_selection
         highest_density = flex.max(rho.select(core_selection))
-        #from IPython import embed; embed()
         too_sparse = core_selection & (rho.as_double() < highest_density/10.) # another heuristic
         if too_sparse.count(True)>0:
           cluster_id.set_selected(too_sparse,-1)
-
+    exit()
     for idx in xrange(NN):
       if cluster_id[idx]==-1:
         plt.plot([coord_x[idx]],[coord_y[idx]],"%s."%(
@@ -158,14 +148,14 @@ if __name__=="__main__":
 
   run_detail(show_plot=False, save_plot=False)
 """ Benchmark, 6672 MBH lattices
-                   Python/Flex arrays;C++ Dij;C++ rho;C++delt;C clust;
-         0. Read data: CPU,    0.000s;  0.00s;  0.01s;  0.00s;  0.00s;
-1. compute Dij matrix: CPU,  171.810s;  1.92s;  1.47s;  1.11s;  1.66s;
- 2.calculate rho dens: CPU,  129.620s;143.39s;  0.27s;  0.27s;  0.19s;
-         3.transition: CPU,    0.020s;  0.03s;  0.02s;  0.04s;  0.02s;
-             4. delta: CPU,  121.590s;121.04s;114.22s;  0.27s;  0.23s;
-5.find cluster maxima: CPU,    0.570s;  0.59s;  0.56s;  0.48s;  0.47s;
- 6. assign all points: CPU,   83.540s; 84.43s; 79.74s; 90.77s;  0.36s;
-      7. assign halos: CPU,   63.750s; 87.83s; 77.63s; 82.06s; 83.06s;
-TOTAL                : CPU,  570.900s;439.23s;273.92s;175.00s; 85.99s;
+                   Python/Flex arrays;C++ Dij;C++ rho;C++delt;C clust;C bordr;
+         0. Read data: CPU,    0.000s;  0.00s;  0.01s;  0.00s;  0.00s;  0.00s;
+1. compute Dij matrix: CPU,  171.810s;  1.92s;  1.47s;  1.11s;  1.66s;  2.02s;
+ 2.calculate rho dens: CPU,  129.620s;143.39s;  0.27s;  0.27s;  0.19s;  0.28s;
+         3.transition: CPU,    0.020s;  0.03s;  0.02s;  0.04s;  0.02s;  0.02s;
+             4. delta: CPU,  121.590s;121.04s;114.22s;  0.27s;  0.23s;  0.40s;
+5.find cluster maxima: CPU,    0.570s;  0.59s;  0.56s;  0.48s;  0.47s;  0.53s;
+ 6. assign all points: CPU,   83.540s; 84.43s; 79.74s; 90.77s;  0.36s;  0.72s;
+      7. assign halos: CPU,   63.750s; 87.83s; 77.63s; 82.06s; 83.06s;  0.06s;
+TOTAL                : CPU,  570.900s;439.23s;273.92s;175.00s; 85.99s;  4.03s;
 """
