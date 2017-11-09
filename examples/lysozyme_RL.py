@@ -193,12 +193,12 @@ if __name__=="__main__":
 """ Benchmark, Lysozyme lattices
                             1341 lattices;    13004 lattices
          0. Read data: CPU,    3.206s;         21.29s;
-1. compute Dij matrix: CPU,   54.895s;          1.47s;
- 2.calculate rho dens: CPU,    0.008s;          0.27s;
+1. compute Dij matrix: CPU,   54.895s;       5065.91s;
+ 2.calculate rho dens: CPU,    0.008s;          0.56s;
          3.transition: CPU,    0.003s;          0.02s;
-             4. delta: CPU,    0.008s;        114.22s;
-5.find cluster maxima: CPU,    0.005s;          0.56s;
- 6. assign all points: CPU,    0.008s;         79.74s;
-      7. assign halos: CPU,    0.004s;         77.63s;
-TOTAL                : CPU,   58.145s;        273.92s;
+             4. delta: CPU,    0.008s;          0.78s;
+5.find cluster maxima: CPU,    0.005s;          0.02s;
+ 6. assign all points: CPU,    0.008s;          0.53s;
+      7. assign halos: CPU,    0.004s;          0.27s;
+TOTAL                : CPU,   58.145s;       5106.25s;
 """
