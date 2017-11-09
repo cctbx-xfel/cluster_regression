@@ -43,6 +43,10 @@ Recompile NCDist.h with OpenMP to afford 24-fold potential speedup
 Consider refactoring the order NxN calculation of NCDist matrix with MPI
 Later:  wrap Tnear.h in Boost python to get NearTree class interface in Python
 
+New progress on 11/9/2017:
+libtbx.python lysozyme_RL.py lysozyme1341.txt # good clustering result, takes 1 minute
+libtbx.python lysozyme_RL.py lysozyme13004.txt # takes 84 minutes, too slow for government work.
+
 
 
 
