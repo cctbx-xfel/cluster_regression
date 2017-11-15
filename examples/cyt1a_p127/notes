@@ -1,0 +1,18 @@
+Cyt1a protein
+processing trial 1, re-run as trial 041_rg002 on 11/14/2017
+This processing fixes the detector distance (now 371)
+No Bravais target is specified, so all cells are in P1
+Runs 9 - 47
+
+Tar files in cxi04616/scratch/common/results_cxip12715/r0*/041_rg002/out
+tar files untarred into integration pickle files in a separate directory
+
+for f in `find ../../common/results_cxip12715/r0*/041_rg002/out -name "*.tar"`; do echo $f; tar xvf ${f} ; done
+
+there are 2125 pickle files (runs 9-47 have many more, but job did not run to completion due to an unrelated bug)
+
+in directory cluster_regression/examples/cyt1a_p127
+for f in `find /reg/d/psdm/cxi/cxi04616/scratch/sauter/p127 -name "*.pickle"`; do libtbx.python summarize_cells.py ${f} ; done
+
+
+
