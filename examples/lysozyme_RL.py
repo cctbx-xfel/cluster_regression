@@ -13,6 +13,8 @@ class clustering_manager(group_args):
     print "finished Dij, now calculating rho_i, the density"
     from xfel.clustering import Rodriguez_Laio_clustering_2014
     # alternative clustering algorithms: see http://scikit-learn.org/stable/modules/clustering.html
+    # also see https://cran.r-project.org/web/packages/dbscan/vignettes/hdbscan.html
+    # see also https://en.wikipedia.org/wiki/Hausdorff_dimension
 
     R = Rodriguez_Laio_clustering_2014(distance_matrix = self.Dij, d_c = self.d_c)
     self.rho = rho = R.get_rho()
@@ -122,9 +124,11 @@ def run_detail(show_plot, save_plot):
     P = Profiler("1. compute Dij matrix")
     NN = len(MM)
 
+    import omptbx
+    omptbx.omp_set_num_threads(64)
     from cctbx.uctbx.determine_unit_cell import NCDist_matrix,NCDist_flatten
-    #Dij = NCDist_matrix(MM_double)
-    Dij = NCDist_flatten(MM_double)
+    #Dij = NCDist_matrix(MM_double) # double loop, less efficient evaluation of upper triangle
+    Dij = NCDist_flatten(MM_double) # loop is flattened
 
     #from cctbx.uctbx.determine_unit_cell import NCDist # can this be refactored with MPI?
     #Dij = flex.double(flex.grid(NN,NN))
@@ -191,15 +195,19 @@ def run_detail(show_plot, save_plot):
 if __name__=="__main__":
 
   run_detail(show_plot=True, save_plot=False)
-""" Benchmark, Lysozyme lattices                             openMP/64core
-                            1341 lattices;    13004 lattices flattened
-         0. Read data: CPU,    3.206s;         21.29s;         39.8s;
-1. compute Dij matrix: CPU,   54.895s;       5065.91s;        215.3s;
- 2.calculate rho dens: CPU,    0.008s;          0.56s;          1.2s;
-         3.transition: CPU,    0.003s;          0.02s;          0.0s;
-             4. delta: CPU,    0.008s;          0.78s;          1.5s;
-5.find cluster maxima: CPU,    0.005s;          0.02s;          0.1s
- 6. assign all points: CPU,    0.008s;          0.53s;          2.8s;
-      7. assign halos: CPU,    0.004s;          0.27s;          0.5s;
-TOTAL                : CPU,   58.145s;OSX    5106.25s;OSX     261.2s;Linux
+""" Benchmark, Lysozyme lattices 
+                           |--------MacOSX----------------| |---------Linux AMD Athlon--------|
+          Lattices              1341        13004             13004      13004    
+          # cores                  1            1                64         64      32     16
+          Dij algorithm    double loop  double loop         double-loop flattened 
+          Dij interface        Python       Python          C++/OpenMP  C++/OpenMP
+         0. Read data: CPU,    3.206s;       21.29s;         38.2s;       39.8s;  41.5s  37.0s
+1. compute Dij matrix: CPU,   54.895s;     5065.91s;        351.7s;      215.3s; 295.0s 505.6s
+ 2.calculate rho dens: CPU,    0.008s;        0.56s;          1.3s;        1.2s;
+         3.transition: CPU,    0.003s;        0.02s;          0.1s;        0.0s;
+             4. delta: CPU,    0.008s;        0.78s;          1.4s;        1.5s;
+5.find cluster maxima: CPU,    0.005s;        0.02s;          0.1s;        0.1s;
+ 6. assign all points: CPU,    0.008s;        0.53s;          1.7s;        2.8s;
+      7. assign halos: CPU,    0.004s;        0.27s;          0.5s;        0.5s;
+TOTAL                : CPU,   58.145s;     5106.25s;        395.0s;      261.2s; 341.0s 547.2s
 """
