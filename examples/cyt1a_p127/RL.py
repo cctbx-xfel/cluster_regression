@@ -100,16 +100,17 @@ def run_detail(show_plot, save_plot):
       Tup = MM[i]
       for j in xrange(6):  MM_double.append(Tup[j])
 
-    print("There are %d cells"%(len(MM)))
-    coord_x = flex.double([c.uc[0] for c in cells]); coord_y = flex.double([c.uc[1] for c in cells])
+    print("There are %d cells X"%(len(MM)))
+    CX = 0 ; CY = 3
+    coord_x = flex.double([c.uc[CX] for c in cells]); coord_y = flex.double([c.uc[CY] for c in cells])
     if show_plot or save_plot:
       import matplotlib
       if not show_plot:
         # http://matplotlib.org/faq/howto_faq.html#generate-images-without-having-a-window-appear
         matplotlib.use('Agg') # use a non-interactive backend
       from matplotlib import pyplot as plt
-      plt.plot([c.uc[0] for c in cells],[c.uc[1] for c in cells],"k.", markersize=3.)
-      plt.axes().set_aspect("equal")
+      plt.plot(coord_x,coord_y,"k.", markersize=3.)
+      #plt.axes().set_aspect("equal")
       if save_plot:
         plt.savefig(plot_name,
                     size_inches=(10,10),
@@ -133,7 +134,7 @@ def run_detail(show_plot, save_plot):
     #    Dij[i,j] = NCDist(MM[i], MM[j])
     del P
 
-    d_c = 100 # the distance cutoff, such that average item neighbors 1-2% of all items
+    d_c = 10000 # the distance cutoff, such that average item neighbors 1-2% of all items
     CM = clustering_manager(Dij=Dij, d_c=d_c)
 
     # Summarize the results here
@@ -171,8 +172,8 @@ def run_detail(show_plot, save_plot):
           linewidths=0.4, edgecolor='k')
       for i in xrange(n_cluster):
         item = flex.first_index(CM.cluster_id_maxima, i)
-        plt.plot([cells[item].uc[0]],[cells[item].uc[1]],'y.')
-      plt.axes().set_aspect("equal")
+        plt.plot([cells[item].uc[CX]],[cells[item].uc[CY]],'y.')
+      #plt.axes().set_aspect("equal")
       plt.show()
 
       #Final plot
@@ -184,8 +185,8 @@ def run_detail(show_plot, save_plot):
           color=colors,linewidths=0.4, edgecolor='k')
       for i in xrange(n_cluster):
         item = flex.first_index(CM.cluster_id_maxima, i)
-        plt.plot([cells[item].uc[0]],[cells[item].uc[1]],'y.')
-      plt.axes().set_aspect("equal")
+        plt.plot([cells[item].uc[CX]],[cells[item].uc[CY]],'y.')
+      #plt.axes().set_aspect("equal")
       plt.show()
 
 if __name__=="__main__":

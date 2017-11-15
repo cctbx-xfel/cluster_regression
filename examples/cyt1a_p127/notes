@@ -14,5 +14,11 @@ there are 2125 pickle files (runs 9-47 have many more, but job did not run to co
 in directory cluster_regression/examples/cyt1a_p127
 for f in `find /reg/d/psdm/cxi/cxi04616/scratch/sauter/p127 -name "*.pickle"`; do libtbx.python summarize_cells.py ${f} ; done
 
+THE HEXAGONAL CELL WE ARE TRYING TO IDENTIFY is about
+65, 65, 140, 90, 90, 120.
+
+Very approximate.  The indexer did NOT use a target cell, without which the resulting cells are 
+quite inaccurate.
+
 
 
