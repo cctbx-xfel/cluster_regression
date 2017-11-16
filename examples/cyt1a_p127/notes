@@ -15,10 +15,17 @@ in directory cluster_regression/examples/cyt1a_p127
 for f in `find /reg/d/psdm/cxi/cxi04616/scratch/sauter/p127 -name "*.pickle"`; do libtbx.python summarize_cells.py ${f} ; done
 
 THE HEXAGONAL CELL WE ARE TRYING TO IDENTIFY is about
-65, 65, 140, 90, 90, 120.
+65.63, 65.63, 166.24, 90, 90, 120. (P6122)
 
-Very approximate.  The indexer did NOT use a target cell, without which the resulting cells are 
-quite inaccurate.
+Unfortunately the quality of the clustering may be very poor.  The data represent the "discovery" 
+phase in XFEL analysis where we give no target symmetry for the Bravais lattice, 
+so many indexing solutions are complete nonsense.  
+
+Nevertheless we eventually solved this structure by molecular replacement in a 
+hexagonal cell, P6122, with a=65.63, c=166.24.  It is conceivable that there 
+are also other crystal forms in the mix, but we have no evidence of this so far.
+
+libtbx.python RL.py cyt1a_2125.txt
 
 
 
