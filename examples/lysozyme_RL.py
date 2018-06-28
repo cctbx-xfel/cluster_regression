@@ -92,10 +92,14 @@ def run_detail(show_plot, save_plot):
     import sys
     file_name = sys.argv[1]
     from xfel.clustering.singleframe import CellOnlyFrame
+    from cctbx import crystal
     cells = []
     for line in open(file_name, "r").xreadlines():
       tokens = line.strip().split()
-      cells.append(CellOnlyFrame(args=tokens,path=None))
+      unit_cell = tuple(float(x) for x in tokens[0:6])
+      space_group_symbol = tokens[6]
+      crystal_symmetry = crystal.symmetry(unit_cell = unit_cell, space_group_symbol = space_group_symbol)
+      cells.append(CellOnlyFrame(crystal_symmetry,path=None))
     MM = [c.mm for c in cells] # get all metrical matrices
     MM_double = flex.double()
     for i in xrange(len(MM)):
@@ -195,11 +199,11 @@ def run_detail(show_plot, save_plot):
 if __name__=="__main__":
 
   run_detail(show_plot=True, save_plot=False)
-""" Benchmark, Lysozyme lattices 
+""" Benchmark, Lysozyme lattices
                            |--------MacOSX----------------| |---------Linux AMD Athlon--------|
-          Lattices              1341        13004             13004      13004    
+          Lattices              1341        13004             13004      13004
           # cores                  1            1                64         64      32     16
-          Dij algorithm    double loop  double loop         double-loop flattened 
+          Dij algorithm    double loop  double loop         double-loop flattened
           Dij interface        Python       Python          C++/OpenMP  C++/OpenMP
          0. Read data: CPU,    3.206s;       21.29s;         38.2s;       39.8s;  41.5s  37.0s
 1. compute Dij matrix: CPU,   54.895s;     5065.91s;        351.7s;      215.3s; 295.0s 505.6s

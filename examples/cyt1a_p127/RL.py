@@ -90,10 +90,14 @@ def run_detail(show_plot, save_plot):
     import sys
     file_name = sys.argv[1]
     from xfel.clustering.singleframe import CellOnlyFrame
+    from cctbx import crystal
     cells = []
     for line in open(file_name, "r").xreadlines():
       tokens = line.strip().split()
-      cells.append(CellOnlyFrame(args=tokens,path=None))
+      unit_cell = tuple(float(x) for x in tokens[0:6])
+      space_group_symbol = tokens[6]
+      crystal_symmetry = crystal.symmetry(unit_cell = unit_cell, space_group_symbol = space_group_symbol)
+      cells.append(CellOnlyFrame(crystal_symmetry, path=None))
     MM = [c.mm for c in cells] # get all metrical matrices
     MM_double = flex.double()
     for i in xrange(len(MM)):
