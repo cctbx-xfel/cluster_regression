@@ -1,4 +1,5 @@
 from __future__ import division
+from six.moves import range
 from cctbx.array_family import flex
 from libtbx.development.timers import Profiler
 from libtbx import group_args
@@ -23,7 +24,7 @@ class clustering_manager(group_args):
 
     P = Profiler("3.transition")
     print "the index with the highest density is %d"%(i_max)
-    delta_i_max = flex.max(flex.double([self.Dij[i_max,j] for j in xrange(NN)]))
+    delta_i_max = flex.max(flex.double([self.Dij[i_max,j] for j in range(NN)]))
     print "delta_i_max",delta_i_max
     rho_order = flex.sort_permutation(rho,reverse=True)
     rho_order_list = list(rho_order)
@@ -40,7 +41,7 @@ class clustering_manager(group_args):
     MAX_PERCENTILE_RHO = 0.99 # cluster centers have to be in the top 75% percentile rho
     n_cluster = 0
     #max_n_delta = min(N_CLUST, int(MAX_PERCENTILE_DELTA*NN))
-    for ic in xrange(NN):
+    for ic in range(NN):
       # test the density, rho
       item_idx = delta_order[ic]
       if delta[item_idx]>100:  print "A: iteration", ic, "delta", delta[item_idx], delta[item_idx] < 0.25 * delta[delta_order[0]]
@@ -53,7 +54,7 @@ class clustering_manager(group_args):
         print ic,item_idx,item_rho_order,cluster_id[item_idx]
         n_cluster += 1
     print "Found %d clusters"%n_cluster
-    for x in xrange(NN):
+    for x in range(NN):
       if cluster_id[x]>=0:
         print "XC",x,cluster_id[x],rho[x],delta[x]
     self.cluster_id_maxima = cluster_id.deep_copy()
@@ -100,9 +101,9 @@ def run_detail(show_plot, save_plot):
       cells.append(CellOnlyFrame(crystal_symmetry, path=None))
     MM = [c.mm for c in cells] # get all metrical matrices
     MM_double = flex.double()
-    for i in xrange(len(MM)):
+    for i in range(len(MM)):
       Tup = MM[i]
-      for j in xrange(6):  MM_double.append(Tup[j])
+      for j in range(6):  MM_double.append(Tup[j])
 
     print("There are %d cells X"%(len(MM)))
     CX = 0 ; CY = 3
@@ -145,7 +146,7 @@ def run_detail(show_plot, save_plot):
     n_cluster = 1+flex.max(CM.cluster_id_final)
     print len(cells), "have been analyzed"
     print ("# ------------   %d CLUSTERS  ----------------"%(n_cluster))
-    for i in xrange(n_cluster):
+    for i in range(n_cluster):
       item = flex.first_index(CM.cluster_id_maxima, i)
       print "Cluster %d.  Central unit cell: item %d"%(i,item)
       cells[item].crystal_symmetry.show_summary()
@@ -163,7 +164,7 @@ def run_detail(show_plot, save_plot):
       from matplotlib import pyplot as plt
 
       plt.plot(CM.rho,CM.delta,"r.", markersize=3.)
-      for x in xrange(NN):
+      for x in range(NN):
         if CM.cluster_id_maxima[x]>=0:
           plt.plot([CM.rho[x]],[CM.delta[x]],"ro")
       plt.show()
@@ -174,7 +175,7 @@ def run_detail(show_plot, save_plot):
 
       plt.scatter(coord_x,coord_y,marker='o',color=colors,
           linewidths=0.4, edgecolor='k')
-      for i in xrange(n_cluster):
+      for i in range(n_cluster):
         item = flex.first_index(CM.cluster_id_maxima, i)
         plt.plot([cells[item].uc[CX]],[cells[item].uc[CY]],'y.')
       #plt.axes().set_aspect("equal")
@@ -187,7 +188,7 @@ def run_detail(show_plot, save_plot):
       colors = [appcolors[i%10] for i in CM.cluster_id_final.select(core)]
       plt.scatter(coord_x.select(core),coord_y.select(core),marker="o",
           color=colors,linewidths=0.4, edgecolor='k')
-      for i in xrange(n_cluster):
+      for i in range(n_cluster):
         item = flex.first_index(CM.cluster_id_maxima, i)
         plt.plot([cells[item].uc[CX]],[cells[item].uc[CY]],'y.')
       #plt.axes().set_aspect("equal")

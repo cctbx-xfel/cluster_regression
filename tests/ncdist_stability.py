@@ -1,4 +1,5 @@
 from __future__ import division
+from six.moves import range
 import os
 import libtbx.load_env
 from xfel.clustering.singleframe import SingleFrame
@@ -22,7 +23,7 @@ def run_one(path):
   g6 = [ SingleFrame.make_g6(u) for u in cells ]
 
   # for the purpose of this test, cycle through pairs of g6 vectors
-  for ix in xrange(len(g6)-1):
+  for ix in range(len(g6)-1):
     a = g6[ix]
     b = g6[ix + 1]
     old = NCDist(a,b)

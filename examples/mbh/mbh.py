@@ -1,4 +1,5 @@
 from __future__ import division
+from six.moves import range
 from cctbx.array_family import flex
 from libtbx.development.timers import Profiler
 from libtbx import group_args
@@ -21,7 +22,7 @@ class clustering_manager(group_args):
 
     P = Profiler("3.transition")
     print "the index with the highest density is %d"%(i_max)
-    delta_i_max = flex.max(flex.double([self.Dij[i_max,j] for j in xrange(NN)]))
+    delta_i_max = flex.max(flex.double([self.Dij[i_max,j] for j in range(NN)]))
     print "delta_i_max",delta_i_max
     rho_order = flex.sort_permutation(rho,reverse=True)
     rho_order_list = list(rho_order)
@@ -38,7 +39,7 @@ class clustering_manager(group_args):
     MAX_PERCENTILE_RHO = 0.75 # cluster centers have to be in the top 75% percentile rho
     n_cluster = 0
     max_n_delta = min(N_CLUST, int(MAX_PERCENTILE_DELTA*NN))
-    for ic in xrange(max_n_delta):
+    for ic in range(max_n_delta):
       # test the density, rho
       item_idx = delta_order[ic]
       if delta[item_idx] < 0.25 * delta[delta_order[0]]: # too low (another heuristic!)
@@ -49,7 +50,7 @@ class clustering_manager(group_args):
         print ic,item_idx,item_rho_order,cluster_id[item_idx]
         n_cluster += 1
     print "Found %d clusters"%n_cluster
-    for x in xrange(NN):
+    for x in range(NN):
       if cluster_id[x]>=0:
         print "XC",x,cluster_id[x],rho[x],delta[x]
     self.cluster_id_maxima = cluster_id.deep_copy()
@@ -123,7 +124,7 @@ def run_detail(show_plot, save_plot):
       #Decision graph
       from matplotlib import pyplot as plt
       plt.plot(CM.rho,CM.delta,"r.", markersize=3.)
-      for x in xrange(NN):
+      for x in range(NN):
         if CM.cluster_id_maxima[x]>=0:
           plt.plot([CM.rho[x]],[CM.delta[x]],"ro")
       plt.show()
