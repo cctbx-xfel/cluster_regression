@@ -2,6 +2,8 @@ from __future__ import division
 from six.moves import range
 import os
 import libtbx.load_env
+# must have numpy--Will crash with OpenMP otherwise, when importing singleframe
+import numpy as np # import dependency
 from xfel.clustering.singleframe import SingleFrame
 from cctbx.uctbx.determine_unit_cell import NCDist,NCDist2017
 
