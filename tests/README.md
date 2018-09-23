@@ -1,3 +1,4 @@
+<pre>
 Instructions to test Andrews/Bernstein NCDist in the context of CCTBX. rev. 9/23/2018. Purpose:
 1) Develop with confidence that nothing has broken (assert that past results are repeated)
 2) Compare results and performance of G6, S6, and D7 metrics.
@@ -47,3 +48,4 @@ cd test
 rm -rf *
 export OMP_NUM_THREADS=8
 libtbx.python ${WORK}/modules/cluster_regression/tests/public-test-all.py
+</pre>
