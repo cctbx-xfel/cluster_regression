@@ -37,6 +37,7 @@ python bootstrap.py hot --builder=dials
 python bootstrap.py update --builder=dials
 cd ${WORK}/modules
 git clone git@github.com:cctbx-xfel/cluster_regression.git
+git clone git@github.com:yayahjb/ncdist.git
 mkdir ${WORK}/build
 cd ${WORK}/build
 python ../modules/cctbx_project/libtbx/configure.py --enable_openmp_if_possible=True cluster_regression

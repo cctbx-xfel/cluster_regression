@@ -29,10 +29,15 @@ def run_one(path):
     a = g6[ix]
     b = g6[ix + 1]
     old = NCDist(a,b)
+    # workaround allows use of non-thread-safe NCDist, even if openMP is enabled elsewhere in the Python program
+    #import os,omptbx
+    #workaround_nt = int(os.environ.get("OMP_NUM_THREADS",1))
+    #omptbx.omp_set_num_threads(1)
     new = NCDist2017(a,b)
     com = NCDist2017(b,a)
-    assert old==new
-    assert new==com
+    #omptbx.omp_set_num_threads(workaround_nt)
+    assert old==new, "Zeldin, AB2017"
+    assert new==com, "AB2017, AB2017 commute"
 
 def run_all():
   textfiles = ["lysozyme1341.txt"]
@@ -42,5 +47,7 @@ def run_all():
     run_one(path)
 
 if __name__=="__main__":
-  run_all()
+  for i in range(1000):
+    print i
+    run_all()
   print "OK"
