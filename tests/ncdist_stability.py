@@ -37,7 +37,7 @@ def run_one(path):
     com = NCDist2017(b,a)
     #omptbx.omp_set_num_threads(workaround_nt)
     assert old==new, "Zeldin, AB2017"
-    assert new==com, "AB2017, AB2017 commute"
+    assert new==com, "NCDist(a,b) %f != NCDist(b,a) %f"%(new,com)
 
 def run_all():
   textfiles = ["lysozyme1341.txt"]
