@@ -6,7 +6,7 @@ space group symbol"""
 if __name__=="__main__":
   args = sys.argv[1:]
   filename = args[0]
-  import cPickle as pickle
+  from six.moves import cPickle as pickle
   data = pickle.load(open(filename,"rb"))
 
   obs = data["observations"][0]
