@@ -95,7 +95,7 @@ def run_detail(show_plot, save_plot):
     from xfel.clustering.singleframe import CellOnlyFrame
     from cctbx import crystal
     cells = []
-    for line in open(file_name, "r").xreadlines():
+    for line in open(file_name, "r"):
       tokens = line.strip().split()
       unit_cell = tuple(float(x) for x in tokens[0:6])
       space_group_symbol = tokens[6]
