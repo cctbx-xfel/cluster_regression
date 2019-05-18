@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, print_function
 import sys
 
 """Simply convert integration pickles to a text file with unit cell and
@@ -13,11 +13,11 @@ if __name__=="__main__":
 
   unit_cell = obs.unit_cell()
   params = unit_cell.parameters()
-  for p in params: print p,
+  print (" ".join([p for p in params]))
 
   space_group = obs.space_group_info().type().lookup_symbol()
-  print "".join(space_group.split()),
+  print("".join(space_group.split()), end=' ')
 
   import os.path
-  print os.path.basename(filename)
+  print(os.path.basename(filename))
 

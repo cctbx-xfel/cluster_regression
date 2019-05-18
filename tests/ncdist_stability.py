@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, print_function
 from six.moves import range
 import os
 import libtbx.load_env
@@ -48,6 +48,6 @@ def run_all():
 
 if __name__=="__main__":
   for i in range(10):
-    print i
+    print(i)
     run_all()
-  print "OK"
+  print("OK")

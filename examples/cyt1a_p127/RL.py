@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, print_function
 from six.moves import range
 from cctbx.array_family import flex
 from libtbx.development.timers import Profiler
@@ -11,7 +11,7 @@ class clustering_manager(group_args):
     group_args.__init__(self, **kwargs)
     # require Dij, d_c
     P = Profiler("2. calculate rho density")
-    print "finished Dij, now calculating rho_i, the density"
+    print("finished Dij, now calculating rho_i, the density")
     from xfel.clustering import Rodriguez_Laio_clustering_2014
     # alternative clustering algorithms: see http://scikit-learn.org/stable/modules/clustering.html
 
@@ -19,13 +19,13 @@ class clustering_manager(group_args):
     self.rho = rho = R.get_rho()
     ave_rho = flex.mean(rho.as_double())
     NN = self.Dij.focus()[0]
-    print "The average rho_i is %5.2f, or %4.1f%%"%(ave_rho, 100*ave_rho/NN)
+    print("The average rho_i is %5.2f, or %4.1f%%"%(ave_rho, 100*ave_rho/NN))
     i_max = flex.max_index(rho)
 
     P = Profiler("3.transition")
-    print "the index with the highest density is %d"%(i_max)
+    print("the index with the highest density is %d"%(i_max))
     delta_i_max = flex.max(flex.double([self.Dij[i_max,j] for j in range(NN)]))
-    print "delta_i_max",delta_i_max
+    print("delta_i_max",delta_i_max)
     rho_order = flex.sort_permutation(rho,reverse=True)
     rho_order_list = list(rho_order)
 
@@ -44,19 +44,19 @@ class clustering_manager(group_args):
     for ic in range(NN):
       # test the density, rho
       item_idx = delta_order[ic]
-      if delta[item_idx]>100:  print "A: iteration", ic, "delta", delta[item_idx], delta[item_idx] < 0.25 * delta[delta_order[0]]
+      if delta[item_idx]>100:  print("A: iteration", ic, "delta", delta[item_idx], delta[item_idx] < 0.25 * delta[delta_order[0]])
       if delta[item_idx] < 0.25 * delta[delta_order[0]]: # too low (another heuristic!)
         continue
       item_rho_order = rho_order_list.index(item_idx)
-      if delta[item_idx]>100:  print "B: iteration", ic, item_rho_order,item_rho_order/NN,MAX_PERCENTILE_RHO
+      if delta[item_idx]>100:  print("B: iteration", ic, item_rho_order,item_rho_order/NN,MAX_PERCENTILE_RHO)
       if item_rho_order/NN < MAX_PERCENTILE_RHO :
         cluster_id[item_idx] = n_cluster
-        print ic,item_idx,item_rho_order,cluster_id[item_idx]
+        print(ic,item_idx,item_rho_order,cluster_id[item_idx])
         n_cluster += 1
-    print "Found %d clusters"%n_cluster
+    print("Found %d clusters"%n_cluster)
     for x in range(NN):
       if cluster_id[x]>=0:
-        print "XC",x,cluster_id[x],rho[x],delta[x]
+        print("XC",x,cluster_id[x],rho[x],delta[x])
     self.cluster_id_maxima = cluster_id.deep_copy()
 
     P = Profiler("6. assign all points")
@@ -70,9 +70,9 @@ class clustering_manager(group_args):
     border = R.get_border( cluster_id = cluster_id )
 
     for ic in range(n_cluster): #loop thru all border regions; find highest density
-      print "cluster",ic, "in border",border.count(True)
+      print("cluster",ic, "in border",border.count(True))
       this_border = (cluster_id == ic) & (border==True)
-      print len(this_border), this_border.count(True)
+      print(len(this_border), this_border.count(True))
       if this_border.count(True)>0:
         highest_density = flex.max(rho.select(this_border))
         halo_selection = (rho < highest_density) & (this_border==True)
@@ -84,7 +84,7 @@ class clustering_manager(group_args):
         if too_sparse.count(True)>0:
           cluster_id.set_selected(too_sparse,-1)
     self.cluster_id_final = cluster_id.deep_copy()
-    print "%d in the excluded halo"%((cluster_id==-1).count(True))
+    print("%d in the excluded halo"%((cluster_id==-1).count(True)))
 
 def run_detail(show_plot, save_plot):
     P = Profiler("0. Read data")
@@ -105,7 +105,7 @@ def run_detail(show_plot, save_plot):
       Tup = MM[i]
       for j in range(6):  MM_double.append(Tup[j])
 
-    print("There are %d cells X"%(len(MM)))
+    print(("There are %d cells X"%(len(MM))))
     CX = 0 ; CY = 3
     coord_x = flex.double([c.uc[CX] for c in cells]); coord_y = flex.double([c.uc[CY] for c in cells])
     if show_plot or save_plot:
@@ -124,7 +124,7 @@ def run_detail(show_plot, save_plot):
       if show_plot:
         plt.show()
 
-    print "Now constructing a Dij matrix."
+    print("Now constructing a Dij matrix.")
     P = Profiler("1. compute Dij matrix")
     NN = len(MM)
 
@@ -144,17 +144,17 @@ def run_detail(show_plot, save_plot):
 
     # Summarize the results here
     n_cluster = 1+flex.max(CM.cluster_id_final)
-    print len(cells), "have been analyzed"
-    print ("# ------------   %d CLUSTERS  ----------------"%(n_cluster))
+    print(len(cells), "have been analyzed")
+    print(("# ------------   %d CLUSTERS  ----------------"%(n_cluster)))
     for i in range(n_cluster):
       item = flex.first_index(CM.cluster_id_maxima, i)
-      print "Cluster %d.  Central unit cell: item %d"%(i,item)
+      print("Cluster %d.  Central unit cell: item %d"%(i,item))
       cells[item].crystal_symmetry.show_summary()
-      print "Cluster has %d items, or %d after trimming borders"%(
+      print("Cluster has %d items, or %d after trimming borders"%(
         (CM.cluster_id_full==i).count(True),
         (CM.cluster_id_final==i).count(True)
-        )
-      print
+        ))
+      print()
 
     appcolors = ['b', 'r', '#ff7f0e', '#2ca02c',
               '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
